@@ -3,8 +3,10 @@
   const wrap = document.querySelector('#canvas-wrap');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });
   const STORAGE_KEY = 'picture-the-patient-autosave';
-  let tool = 'pencil', colour = '#171717', width = 7, drawing = false, last = null;
+  let tool = 'pencil', colour = '#252321', width = 5, drawing = false, last = null;
   let lastTouchTime = 0;
+  const history = [];
+  const HISTORY_LIMIT = 20;
 
   function cssSize() {
     const rect = wrap.getBoundingClientRect();
@@ -40,7 +42,33 @@
     return { x: clientX - r.left, y: clientY - r.top };
   }
 
+  function snapshot() {
+    try {
+      history.push(canvas.toDataURL('image/png'));
+      if (history.length > HISTORY_LIMIT) history.shift();
+    } catch {}
+  }
+
+  function restoreSnapshot(dataUrl) {
+    const img = new Image();
+    img.onload = () => {
+      const { w, h } = cssSize();
+      ctx.clearRect(0, 0, w, h);
+      fillWhite();
+      ctx.drawImage(img, 0, 0, w, h);
+      saveLocal();
+    };
+    img.src = dataUrl;
+  }
+
+  function undo() {
+    const previous = history.pop();
+    if (!previous) return;
+    restoreSnapshot(previous);
+  }
+
   function beginAt(p) {
+    snapshot();
     if (tool === 'fill') { floodFill(p); saveLocal(); return; }
     drawing = true;
     last = p;
@@ -100,7 +128,13 @@
   document.querySelectorAll('.width').forEach(b=>b.addEventListener('click',()=>{ width=+b.dataset.width; activate('.width',b); }));
   document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{ colour=b.dataset.colour; tool='pencil'; activate('.swatch',b); activate('.tool',document.querySelector('[data-tool="pencil"]')); }));
 
-  function clearCanvas(){ const {w,h}=cssSize(); ctx.clearRect(0,0,w,h); fillWhite(); try{localStorage.removeItem(STORAGE_KEY)}catch{} }
+  function clearCanvas(){
+    snapshot();
+    const {w,h}=cssSize();
+    ctx.clearRect(0,0,w,h);
+    fillWhite();
+    try{localStorage.removeItem(STORAGE_KEY)}catch{}
+  }
   function saveLocal(){ try{localStorage.setItem(STORAGE_KEY,canvas.toDataURL('image/png'))}catch{} }
   function restoreLocal(){
     let saved=null; try{saved=localStorage.getItem(STORAGE_KEY)}catch{}
@@ -121,9 +155,9 @@
   }
 
   document.querySelector('#clear').addEventListener('click',clearCanvas);
+  document.querySelector('#undo').addEventListener('click',undo);
   document.querySelector('#save').addEventListener('click',saveDrawing);
 
-  // Finger input: use native touch events directly. This is more reliable in Android in-app browsers.
   canvas.addEventListener('touchstart', e=>{
     e.preventDefault();
     lastTouchTime=Date.now();
@@ -139,7 +173,6 @@
   canvas.addEventListener('touchend', e=>{e.preventDefault();lastTouchTime=Date.now();finishStroke();},{passive:false});
   canvas.addEventListener('touchcancel', e=>{e.preventDefault();lastTouchTime=Date.now();finishStroke();},{passive:false});
 
-  // Pen/stylus input uses Pointer Events; touch pointers are ignored to avoid duplicate strokes.
   if(window.PointerEvent){
     canvas.addEventListener('pointerdown',e=>{
       if(e.pointerType==='touch') return;
@@ -151,7 +184,6 @@
     canvas.addEventListener('pointercancel',e=>{if(e.pointerType!=='touch')finishStroke();},{passive:false});
   }
 
-  // Mouse fallback, suppressing the synthetic mouse event some phones emit after touch.
   canvas.addEventListener('mousedown',e=>{if(Date.now()-lastTouchTime<700)return;e.preventDefault();beginAt(pointFromClient(e.clientX,e.clientY));});
   window.addEventListener('mousemove',e=>{if(!drawing||Date.now()-lastTouchTime<700)return;moveTo(pointFromClient(e.clientX,e.clientY));});
   window.addEventListener('mouseup',()=>{if(Date.now()-lastTouchTime<700)return;finishStroke();});
