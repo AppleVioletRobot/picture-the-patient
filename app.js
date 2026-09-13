@@ -89,6 +89,7 @@
   }
 
   function draw(a, b) {
+    ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = tool === 'eraser' ? '#ffffff' : colour;
     ctx.lineWidth = width;
     ctx.beginPath();
@@ -99,28 +100,81 @@
 
   function floodFill(p) {
     const dpr = Math.max(1, window.devicePixelRatio || 1);
-    const x = Math.floor(p.x * dpr), y = Math.floor(p.y * dpr), w = canvas.width, h = canvas.height;
+    const x = Math.floor(p.x * dpr), y = Math.floor(p.y * dpr);
+    const w = canvas.width, h = canvas.height;
     if (x < 0 || y < 0 || x >= w || y >= h) return;
-    const img = ctx.getImageData(0,0,w,h), data = img.data, start = (y*w+x)*4;
-    const target = [data[start],data[start+1],data[start+2],data[start+3]];
+
+    const img = ctx.getImageData(0, 0, w, h);
+    const data = img.data;
+    const start = (y * w + x) * 4;
+    const target = [data[start], data[start+1], data[start+2], data[start+3]];
+
     const temp = document.createElement('canvas').getContext('2d');
-    temp.fillStyle = colour; temp.fillRect(0,0,1,1);
-    const fill = temp.getImageData(0,0,1,1).data;
-    if (target[0]===fill[0] && target[1]===fill[1] && target[2]===fill[2]) return;
-    const match = i => Math.abs(data[i]-target[0])<12 && Math.abs(data[i+1]-target[1])<12 && Math.abs(data[i+2]-target[2])<12 && data[i+3]===target[3];
-    const stack=[[x,y]], seen=new Uint8Array(w*h);
-    while(stack.length){
-      const [cx,cy]=stack.pop();
-      if(cx<0||cy<0||cx>=w||cy>=h) continue;
-      const pos=cy*w+cx;
-      if(seen[pos]) continue;
-      seen[pos]=1;
-      const i=pos*4;
-      if(!match(i)) continue;
-      data[i]=fill[0]; data[i+1]=fill[1]; data[i+2]=fill[2]; data[i+3]=255;
+    temp.fillStyle = colour;
+    temp.fillRect(0, 0, 1, 1);
+    const fill = temp.getImageData(0, 0, 1, 1).data;
+
+    if (target[0] === fill[0] && target[1] === fill[1] && target[2] === fill[2]) return;
+
+    const match = i =>
+      Math.abs(data[i] - target[0]) < 12 &&
+      Math.abs(data[i+1] - target[1]) < 12 &&
+      Math.abs(data[i+2] - target[2]) < 12 &&
+      data[i+3] === target[3];
+
+    const stack = [[x, y]];
+    const filled = new Uint8Array(w * h);
+
+    while (stack.length) {
+      const [cx, cy] = stack.pop();
+      if (cx < 0 || cy < 0 || cx >= w || cy >= h) continue;
+      const pos = cy * w + cx;
+      if (filled[pos]) continue;
+      const i = pos * 4;
+      if (!match(i)) continue;
+
+      filled[pos] = 1;
+      data[i] = fill[0];
+      data[i+1] = fill[1];
+      data[i+2] = fill[2];
+      data[i+3] = 255;
+
       stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
     }
-    ctx.putImageData(img,0,0);
+
+    // Unlike a traditional paint bucket, new colour should visually sit on top.
+    // Expand only from the filled region's boundary, enough to cover the line that enclosed it.
+    const radius = Math.max(1, Math.round((width * dpr) / 2));
+    const boundary = [];
+
+    for (let cy = 0; cy < h; cy++) {
+      for (let cx = 0; cx < w; cx++) {
+        const pos = cy * w + cx;
+        if (!filled[pos]) continue;
+        if (
+          cx === 0 || cy === 0 || cx === w - 1 || cy === h - 1 ||
+          !filled[pos - 1] || !filled[pos + 1] ||
+          !filled[pos - w] || !filled[pos + w]
+        ) boundary.push([cx, cy]);
+      }
+    }
+
+    for (const [bx, by] of boundary) {
+      for (let oy = -radius; oy <= radius; oy++) {
+        for (let ox = -radius; ox <= radius; ox++) {
+          if (ox * ox + oy * oy > radius * radius) continue;
+          const px = bx + ox, py = by + oy;
+          if (px < 0 || py < 0 || px >= w || py >= h) continue;
+          const i = (py * w + px) * 4;
+          data[i] = fill[0];
+          data[i+1] = fill[1];
+          data[i+2] = fill[2];
+          data[i+3] = 255;
+        }
+      }
+    }
+
+    ctx.putImageData(img, 0, 0);
   }
 
   function activate(selector, el){ document.querySelectorAll(selector).forEach(b=>b.classList.remove('active')); el.classList.add('active'); }
