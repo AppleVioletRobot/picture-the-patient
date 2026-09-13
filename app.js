@@ -142,9 +142,9 @@
       stack.push([cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]);
     }
 
-    // Unlike a traditional paint bucket, new colour should visually sit on top.
-    // Expand only from the filled region's boundary, enough to cover the line that enclosed it.
-    const radius = Math.max(1, Math.round((width * dpr) / 2));
+    // New paint visually wins. Push the fill beyond the old boundary far enough
+    // to swallow both the solid stroke edge and its anti-aliased fringe.
+    const radius = Math.max(2, Math.round((width * dpr) / 2 + 3 * dpr));
     const boundary = [];
 
     for (let cy = 0; cy < h; cy++) {
