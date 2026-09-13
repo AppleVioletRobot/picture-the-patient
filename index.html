@@ -2,48 +2,61 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Picture the Patient — a small provocation about how clinical pictures are assembled.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#f3efe5">
   <title>Picture the Patient</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main class="shell">
-    <header class="masthead">
-      <p class="eyebrow">A SMALL CLINICAL PROVOCATION</p>
-      <h1>PICTURE<br>THE PATIENT</h1>
-      <p class="intro">A patient is never only the part that fits in the note. Generate a picture from fragments, then change one piece at a time.</p>
-    </header>
+  <header class="topbar">
+    <h1>Picture the Patient</h1>
+    <button id="clear" class="clear" type="button">Clear</button>
+  </header>
 
-    <section class="machine" aria-labelledby="patient-heading">
-      <div class="machine-top">
-        <div>
-          <p class="label">CURRENT PICTURE</p>
-          <h2 id="patient-heading">Patient <span id="patient-number">001</span></h2>
-        </div>
-        <button class="generate" id="generate-all" type="button">PICTURE THE PATIENT</button>
+  <main class="studio">
+    <aside class="tools" aria-label="Drawing tools">
+      <div class="tool-group">
+        <button class="tool active" data-tool="pencil" type="button" aria-label="Pencil" title="Pencil">✎</button>
+        <button class="tool" data-tool="eraser" type="button" aria-label="Eraser" title="Eraser">▱</button>
+        <button class="tool" data-tool="fill" type="button" aria-label="Fill bucket" title="Fill bucket">▰</button>
       </div>
 
-      <div class="strips" id="strips" aria-live="polite"></div>
-
-      <div class="reflection">
-        <p class="reflection-kicker">NOW LOOK AGAIN</p>
-        <p id="reflection-text">What changed when one fragment changed? Which version felt more clinically plausible — and why?</p>
+      <div class="widths" aria-label="Pencil width">
+        <button class="width" data-width="3" type="button" aria-label="Thin line"><span class="dot thin"></span></button>
+        <button class="width active" data-width="7" type="button" aria-label="Medium line"><span class="dot medium"></span></button>
+        <button class="width" data-width="14" type="button" aria-label="Thick line"><span class="dot thick"></span></button>
       </div>
+
+      <div class="palette" aria-label="Colours">
+        <button class="swatch active" data-colour="#171717" style="--swatch:#171717" aria-label="Black"></button>
+        <button class="swatch" data-colour="#e94b35" style="--swatch:#e94b35" aria-label="Red"></button>
+        <button class="swatch" data-colour="#f39b2f" style="--swatch:#f39b2f" aria-label="Orange"></button>
+        <button class="swatch" data-colour="#f2d13d" style="--swatch:#f2d13d" aria-label="Yellow"></button>
+        <button class="swatch" data-colour="#62a85b" style="--swatch:#62a85b" aria-label="Green"></button>
+        <button class="swatch" data-colour="#397cc4" style="--swatch:#397cc4" aria-label="Blue"></button>
+        <button class="swatch" data-colour="#8659ad" style="--swatch:#8659ad" aria-label="Purple"></button>
+        <button class="swatch" data-colour="#d58a8f" style="--swatch:#d58a8f" aria-label="Pink"></button>
+      </div>
+    </aside>
+
+    <section class="canvas-wrap" id="canvas-wrap">
+      <canvas id="canvas" aria-label="Drawing canvas"></canvas>
     </section>
 
-    <aside class="about">
-      <p><strong>This is not a diagnostic tool.</strong> It is a toy-sized prompt for thinking about how clinicians assemble a patient from partial information: observations, shorthand, context, interpretation and assumptions.</p>
-      <p>Nothing generated here is intended to form a coherent or realistic case. The joins are the point.</p>
+    <aside class="notes">
+      <p class="notes-label">PATIENT NOTES</p>
+      <div class="note-copy">
+        <p><strong>55F</strong></p>
+        <p>8½ week admission following MSSA bacteraemia with sepsis.</p>
+        <p>Psoas abscess. Bowel perforation sealed without surgery.</p>
+        <p>Mobilising independently. Alert and orientated. Engages well.</p>
+        <p>Able to give clear account of admission and treatment.</p>
+        <p>For discharge home.</p>
+      </div>
+      <p class="prompt">Picture the patient.</p>
     </aside>
   </main>
 
-  <footer>
-    <span>Picture the Patient · prototype v0.1</span>
-    <a href="https://github.com/AppleVioletRobot/picture-the-patient">source</a>
-  </footer>
-
-  <script src="data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
