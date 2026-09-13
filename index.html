@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Picture the Patient — a small provocation about how clinical pictures are assembled.">
+  <title>Picture the Patient</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <p class="eyebrow">A SMALL CLINICAL PROVOCATION</p>
+      <h1>PICTURE<br>THE PATIENT</h1>
+      <p class="intro">A patient is never only the part that fits in the note. Generate a picture from fragments, then change one piece at a time.</p>
+    </header>
+
+    <section class="machine" aria-labelledby="patient-heading">
+      <div class="machine-top">
+        <div>
+          <p class="label">CURRENT PICTURE</p>
+          <h2 id="patient-heading">Patient <span id="patient-number">001</span></h2>
+        </div>
+        <button class="generate" id="generate-all" type="button">PICTURE THE PATIENT</button>
+      </div>
+
+      <div class="strips" id="strips" aria-live="polite"></div>
+
+      <div class="reflection">
+        <p class="reflection-kicker">NOW LOOK AGAIN</p>
+        <p id="reflection-text">What changed when one fragment changed? Which version felt more clinically plausible — and why?</p>
+      </div>
+    </section>
+
+    <aside class="about">
+      <p><strong>This is not a diagnostic tool.</strong> It is a toy-sized prompt for thinking about how clinicians assemble a patient from partial information: observations, shorthand, context, interpretation and assumptions.</p>
+      <p>Nothing generated here is intended to form a coherent or realistic case. The joins are the point.</p>
+    </aside>
+  </main>
+
+  <footer>
+    <span>Picture the Patient · prototype v0.1</span>
+    <a href="https://github.com/AppleVioletRobot/picture-the-patient">source</a>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
